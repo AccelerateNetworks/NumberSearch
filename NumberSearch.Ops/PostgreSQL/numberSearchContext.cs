@@ -438,6 +438,10 @@ public partial class numberSearchContext : DbContext
             entity.Property(e => e.InternalNotes).HasColumnType("character varying");
 
             entity.Property(e => e.QuoteStatus).HasColumnType("character varying");
+
+            // Set by the customer at checkout, never written from here.
+            entity.Property(e => e.InternetTermYears).Metadata.SetAfterSaveBehavior(Microsoft.EntityFrameworkCore.Metadata.PropertySaveBehavior.Ignore);
+            entity.Property(e => e.InternetTermYears).Metadata.SetBeforeSaveBehavior(Microsoft.EntityFrameworkCore.Metadata.PropertySaveBehavior.Ignore);
         });
 
         modelBuilder.Entity<OwnedPhoneNumber>(entity =>

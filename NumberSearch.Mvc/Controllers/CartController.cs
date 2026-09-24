@@ -828,6 +828,21 @@ Accelerate Networks
                     order.VoiceProductAcknowledgedUtc = DateTime.Now;
                 }
 
+                if (InternetBundle.FiberConnections(cart.ProductOrders) > 0)
+                {
+                    if (!InternetBundle.TermYears.Contains(order.InternetTermYears))
+                    {
+                        _ = cart.SetToSession(HttpContext.Session);
+                        Log.Error("[Checkout] No contract term was selected for an order containing fiber internet.");
+                        var message = "💀 Please select a 2, 3 or 5 year term for your fiber internet before submitting your order.";
+                        return View("Order", new CartResult { Message = message, Cart = cart });
+                    }
+                }
+                else
+                {
+                    order.InternetTermYears = 0;
+                }
+
                 order.DateSubmitted = DateTime.Now;
 
                 if (order.OrderId != Guid.Empty)
@@ -1233,7 +1248,7 @@ Accelerate Networks
                         reoccuringItems.Add(new Line_Items
                         {
                             product_key = service.Name,
-                            notes = $"{service.Description}",
+                            notes = InternetBundle.IsFiberInternet(service.ServiceId) && order.InternetTermYears > 0 ? $"{order.InternetTermYears} year term. {service.Description}" : $"{service.Description}",
                             cost = service.Price,
                             quantity = productOrder.Quantity
                         });
@@ -1351,6 +1366,19 @@ Accelerate Networks
 
                     //var checkSubmitted = await productOrder.PostAsync(_postgresql);
                 }
+            }
+
+            var bundleDiscount = InternetBundle.Discount(cart.ProductOrders);
+            if (bundleDiscount > 0)
+            {
+                totalCost -= bundleDiscount;
+                reoccuringItems.Add(new Line_Items
+                {
+                    product_key = InternetBundle.Name,
+                    notes = InternetBundle.IsPartnerOnly(cart.ProductOrders) ? InternetBundle.PartnerDescription : InternetBundle.Description,
+                    cost = InternetBundle.DiscountPerConnection * -1,
+                    quantity = InternetBundle.FiberConnections(cart.ProductOrders)
+                });
             }
 
             return new ProductOrderSummary(emailSubject ?? string.Empty, totalCost, totalPortingCost, totalNumberPurchasingCost);

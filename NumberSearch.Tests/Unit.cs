@@ -39,6 +39,32 @@ namespace NumberSearch.Tests
         }
 
         [Fact]
+        public void InternetBundleDiscountTest()
+        {
+            var fiber = new NumberSearch.DataAccess.ProductOrder { ServiceId = NumberSearch.DataAccess.InternetBundle.FiberInternet1GServiceId, Quantity = 1 };
+            var twoFiber = new NumberSearch.DataAccess.ProductOrder { ServiceId = NumberSearch.DataAccess.InternetBundle.FiberInternet300ServiceId, Quantity = 2 };
+            var lines = new NumberSearch.DataAccess.ProductOrder { ServiceId = NumberSearch.DataAccess.InternetBundle.StandardLinesServiceId, Quantity = 3 };
+            var seats = new NumberSearch.DataAccess.ProductOrder { ServiceId = NumberSearch.DataAccess.InternetBundle.ConcurrentSeatsServiceId, Quantity = 1 };
+            var noLines = new NumberSearch.DataAccess.ProductOrder { ServiceId = NumberSearch.DataAccess.InternetBundle.StandardLinesServiceId, Quantity = 0 };
+            var partner = new NumberSearch.DataAccess.ProductOrder { CouponId = NumberSearch.DataAccess.InternetBundle.PartnerCouponId, Quantity = 1 };
+            var otherCoupon = new NumberSearch.DataAccess.ProductOrder { CouponId = Guid.NewGuid(), Quantity = 1 };
+
+            // Fiber on its own, or with a coupon that isn't Partner, pays full price.
+            Assert.Equal(0, NumberSearch.DataAccess.InternetBundle.Discount([fiber]));
+            Assert.Equal(0, NumberSearch.DataAccess.InternetBundle.Discount([fiber, otherCoupon, noLines]));
+            // Phone service or the Partner coupon take $15 off each fiber connection, never more.
+            Assert.Equal(15, NumberSearch.DataAccess.InternetBundle.Discount([fiber, lines]));
+            Assert.Equal(15, NumberSearch.DataAccess.InternetBundle.Discount([fiber, lines, seats, partner]));
+            Assert.Equal(15, NumberSearch.DataAccess.InternetBundle.Discount([fiber, partner]));
+            Assert.Equal(45, NumberSearch.DataAccess.InternetBundle.Discount([fiber, twoFiber, seats]));
+            // Phone service without fiber has nothing to discount.
+            Assert.Equal(0, NumberSearch.DataAccess.InternetBundle.Discount([lines, partner]));
+
+            Assert.True(NumberSearch.DataAccess.InternetBundle.IsPartnerOnly([fiber, partner]));
+            Assert.False(NumberSearch.DataAccess.InternetBundle.IsPartnerOnly([fiber, lines, partner]));
+        }
+
+        [Fact]
         public void ServiceAddressDistanceTest()
         {
             // 0.0001 degrees of latitude is about 11 meters.

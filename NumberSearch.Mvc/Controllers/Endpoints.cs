@@ -220,8 +220,6 @@ namespace NumberSearch.Mvc.Controllers
         /// <param name="offers">The services available at the address.</param>
         public readonly record struct InternetAvailability(bool serviceable, string matchedAddress, InternetOffer[] offers);
 
-        public static readonly Guid FiberInternet300ServiceId = new("cbcf5128-5164-40de-8dff-e71d0f152cab");
-        public static readonly Guid FiberInternet1GServiceId = new("708c3885-6dab-4a60-9e42-05cf13530076");
         private const string FiberTerms = "2, 3 or 5 year term. $15/mo off when bundled with any phone service.";
 
         /// <summary>
@@ -247,10 +245,10 @@ namespace NumberSearch.Mvc.Controllers
             var wfi = addresses.AsValueEnumerable().Where(x => x.Product is "WFI").ToArray();
             if (wfi.AsValueEnumerable().Any(x => x.Status is "Sellable"))
             {
-                offers.Add(new("WFI", "Sellable", "Fiber Internet 300 Mbps", "300/300 Mbps", 75, FiberInternet300ServiceId, FiberTerms));
+                offers.Add(new("WFI", "Sellable", "Fiber Internet 300 Mbps", "300/300 Mbps", 75, InternetBundle.FiberInternet300ServiceId, FiberTerms));
                 if (wfi.AsValueEnumerable().Any(x => x.Status is "Sellable" && x.MaxSpeed.StartsWith("1.0G")))
                 {
-                    offers.Add(new("WFI", "Sellable", "Fiber Internet 1 Gbps", "1/1 Gbps", 115, FiberInternet1GServiceId, FiberTerms));
+                    offers.Add(new("WFI", "Sellable", "Fiber Internet 1 Gbps", "1/1 Gbps", 115, InternetBundle.FiberInternet1GServiceId, FiberTerms));
                 }
             }
             else if (wfi.Length > 0)

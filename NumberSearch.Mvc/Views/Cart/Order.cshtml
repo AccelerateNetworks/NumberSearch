@@ -1,4 +1,5 @@
-﻿@using PhoneNumbersNA
+﻿@using NumberSearch.DataAccess
+@using PhoneNumbersNA
 @using System
 @model NumberSearch.Mvc.CartResult;
 
@@ -14,6 +15,9 @@
     var verified = Model?.Cart?.VerifiedPhoneNumbers?.OrderByDescending(x => x.VerifiedDialedNumber).ToArray();
     var coupons = Model?.Cart?.Coupons?.ToArray();
     var productOrders = Model?.Cart?.ProductOrdersToDictionary();
+    var productOrderList = Model?.Cart?.ProductOrders ?? [];
+    var fiberConnections = InternetBundle.FiberConnections(productOrderList);
+    var bundleDiscount = InternetBundle.Discount(productOrderList);
 
     var stdSeatId = new Guid("16e2c639-445b-4ae6-9925-07300318206b");
     var concurrentSeatId = new Guid("48eb4627-8692-4a3b-8be1-be64bbeea534");
@@ -547,6 +551,24 @@
                                 </li>
                             }
                         }
+
+                        if (bundleDiscount > 0)
+                        {
+                            couponTotal += bundleDiscount * -1;
+                            <li class="list-group-item d-flex justify-content-between lh-condensed bg-light">
+                                <div class="text-success">
+                                    <h6 class="my-0">
+                                        @InternetBundle.Name
+                                        @if (fiberConnections > 1)
+                                        {
+                                            <small>x @fiberConnections</small>
+                                        }
+                                    </h6>
+                                    <small class="text-success">@(InternetBundle.IsPartnerOnly(productOrderList) ? InternetBundle.PartnerDescription : InternetBundle.Description)</small>
+                                </div>
+                                <span class="text-success">$@bundleDiscount</span>
+                            </li>
+                        }
                     }
                     <li class="list-group-item d-flex justify-content-between lh-condensed">
                         <div>
@@ -655,6 +677,24 @@
                             Enter the name of your business or the organization that you represent
                         </small>
                     </div>
+
+                    @if (fiberConnections > 0)
+                    {
+                        var selectedTerm = Model?.Cart?.Order?.InternetTermYears ?? 0;
+                        <div class="mb-3">
+                            <label for="internetTermYears">Fiber Internet Term</label>
+                            <select name="Cart.Order.InternetTermYears" class="form-control" id="internetTermYears" required>
+                                <option value="" selected="@(selectedTerm == 0)" disabled>Select a term</option>
+                                @foreach (var years in InternetBundle.TermYears)
+                                {
+                                    <option value="@years" selected="@(selectedTerm == years)">@years years</option>
+                                }
+                            </select>
+                            <small class="text-muted">
+                                Fiber internet is billed monthly on a 2, 3 or 5 year term
+                            </small>
+                        </div>
+                    }
 
                     <div class="row">
                         <div class="col-md-6">

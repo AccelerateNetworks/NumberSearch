@@ -38,5 +38,9 @@ namespace AccelerateNetworks.Operations
         public DateTime? DateUpfrontInvoicePaid { get; set; }
         public string? InternalNotes { get; set; }
         public string? QuoteStatus { get; set; }
+        /// <summary>
+        /// Chosen by the customer at checkout, read only here so editing an order can't clear it.
+        /// </summary>
+        public int InternetTermYears { get; set; }
     }
 }
