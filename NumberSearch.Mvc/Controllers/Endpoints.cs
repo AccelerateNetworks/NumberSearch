@@ -1,10 +1,7 @@
 ﻿using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 
-using nietras.SeparatedValues;
-
 using NumberSearch.DataAccess;
-using NumberSearch.DataAccess.FCC;
 using NumberSearch.DataAccess.FusionPBX;
 using NumberSearch.Mvc.Models;
 
@@ -12,7 +9,6 @@ using PhoneNumbersNA;
 
 using System.Collections.Concurrent;
 using System.ComponentModel.DataAnnotations;
-using System.IO.Compression;
 
 using ZLinq;
 
@@ -205,122 +201,70 @@ namespace NumberSearch.Mvc.Controllers
         }
 
         /// <summary>
-        /// Represents the speeds for a provider in a specific geographic area.
+        /// A service we can sell at an address.
         /// </summary>
-        /// <param name="geoid"></param>
-        /// <param name="frn"></param>
-        /// <param name="provider"></param>
-        /// <param name="technology"></param>
-        /// <param name="techdesc"></param>
-        /// <param name="down"></param>
-        /// <param name="up"></param>
-        /// <param name="serviceId"></param>
-        public readonly record struct ProviderGeoSpeeds(string geoid, string frn, string provider, string technology, string techdesc, decimal down, decimal up, Guid serviceId);
+        /// <param name="product">WFI (fiber internet) or EIA (ethernet internet access).</param>
+        /// <param name="status">Sellable (add to cart at the listed price), Confirm (contact us to confirm availability), or Quote (custom priced, request a quote).</param>
+        /// <param name="name">The name of the service.</param>
+        /// <param name="speed">The symmetrical speed of the service.</param>
+        /// <param name="price">The monthly price in dollars, or 0 when the price must be quoted.</param>
+        /// <param name="serviceId">The ServiceId to add to the cart, or empty when it can't be added to the cart directly.</param>
+        /// <param name="note">Terms and details to show alongside the service.</param>
+        public readonly record struct InternetOffer(string product, string status, string name, string speed, int price, Guid serviceId, string note);
 
         /// <summary>
-        /// Represents the technical description for a specific technology.
+        /// The services available at an address.
         /// </summary>
-        /// <param name="code">The code for the technology.</param>
-        /// <param name="name">The name of the technology.</param>
-        /// <param name="description">The description of the technology.</param>
-        public readonly record struct TechDesc(string code, string name, string description);
+        /// <param name="serviceable">Whether any service is available at the address.</param>
+        /// <param name="matchedAddress">The address from the provider's building list that matched the query.</param>
+        /// <param name="offers">The services available at the address.</param>
+        public readonly record struct InternetAvailability(bool serviceable, string matchedAddress, InternetOffer[] offers);
+
+        public static readonly Guid FiberInternet300ServiceId = new("cbcf5128-5164-40de-8dff-e71d0f152cab");
+        public static readonly Guid FiberInternet1GServiceId = new("708c3885-6dab-4a60-9e42-05cf13530076");
+        private const string FiberTerms = "2, 3 or 5 year term. $15/mo off when bundled with any phone service.";
 
         /// <summary>
-        /// Looks up geographic information for a specific state.
+        /// Look up the internet services we can sell at an address, using the building lists from our providers.
         /// </summary>
-        /// <param name="state">The state for which to look up geographic information.</param>
-        /// <param name="geoid">The geographic identifier within that state.</param>
+        /// <param name="houseNumber">The house or building number, ex. 1250</param>
+        /// <param name="street">The street name without the direction or suffix, ex. 1st</param>
+        /// <param name="postal">The 5 digit ZIP code, ex. 98134</param>
+        /// <param name="latitude">The latitude of the address, used when the street address doesn't match exactly.</param>
+        /// <param name="longitude">The longitude of the address, used when the street address doesn't match exactly.</param>
         /// <param name="mvcConfiguration">The configuration for the application.</param>
-        /// <returns>An array of ProviderGeoSpeeds.</returns>
-        public static async Task<Results<Ok<ProviderGeoSpeeds[]>, BadRequest<string>>> FCCStateGeoIdLookup([Required] string state, string geoid, [FromServices] MvcConfiguration mvcConfiguration)
+        /// <returns>The services available at the address.</returns>
+        public static async Task<Results<Ok<InternetAvailability>, BadRequest<string>>> InternetAvailabilityAsync(string? houseNumber, string? street, string? postal, double? latitude, double? longitude, [FromServices] MvcConfiguration mvcConfiguration)
         {
-            if (string.IsNullOrWhiteSpace(state))
+            if ((string.IsNullOrWhiteSpace(houseNumber) || string.IsNullOrWhiteSpace(street) || string.IsNullOrWhiteSpace(postal)) && (latitude is null || longitude is null))
             {
-                return TypedResults.BadRequest("No state provided (ex: Washington). Please try a different query. 🥺👉👈");
+                return TypedResults.BadRequest("Provide a houseNumber, street, and postal code or a latitude and longitude (ex: houseNumber=1250&street=1st&postal=98134). Please try a different query. 🥺👉👈");
             }
 
-            // Add portable numbers to cart in bulk
-            if (!string.IsNullOrWhiteSpace(geoid))
+            var addresses = (await ServiceAddress.LookupAsync(houseNumber ?? string.Empty, street ?? string.Empty, postal ?? string.Empty, latitude ?? 0, longitude ?? 0, mvcConfiguration.PostgresqlProd)).ToArray();
+            var offers = new List<InternetOffer>();
+
+            var wfi = addresses.AsValueEnumerable().Where(x => x.Product is "WFI").ToArray();
+            if (wfi.AsValueEnumerable().Any(x => x.Status is "Sellable"))
             {
-                var canidates = new List<ProviderGeoSpeeds>();
-
-                var techDesc = new List<TechDesc>() {
-                    new("10", "Copper", "Fixed wireline service using copper wire (e.g., Asymmetric or Symmetric DSL, ethernet over copper, T-1, etc.)."),
-                    new("40","Cable","Fixed wireline service using coaxial cable or hybrid fiber-coaxial (e.g., DOCSISx)."),
-                    new("50","Fiber to the Premises","Fixed wireline service using fiber to the home or business end user, but does not include \"fiber to the curb\"."),
-                    new("70","Unlicensed Fixed Wireless","Fixed terrestrial wireless service using entirely unlicensed spectrum, including services provided over WiFi as a fixed solution."),
-                    new("71","Licensed Fixed Wireless","Fixed wireless service using entirely licensed spectrum (including priority access licenses in the 3.5 GHz band) or a hybrid of licensed, unlicensed, and licensed-by-rule spectrum to make last-mile connections to fixed locations. This includes service provided over a 4G LTE or 5G-NR mobile network but sold as a fixed solution."),
-                    new("72","LBR Fixed Wireless","Fixed wireless services using entirely licensed-by-rule spectrum or a hybrid of licensed-by-rule and unlicensed spectrum to make last-mile connections to fixed locations. Licensed-by-rule spectrum users include operators providing last-mile connections through general authorized access (GAA) in the 3.5 GHz Citizens Broadband Radio Service (CBRS) band."),};
-
-                var result = await ListAsOfDates.GetAsync(mvcConfiguration.FCCUsername.AsMemory(), mvcConfiguration.FCCAPIToken.AsMemory());
-                var date = result.data.AsValueEnumerable().OrderByDescending(x => x.as_of_date).Where(x => x.data_type is "availability").FirstOrDefault();
-                var listing = await ListAvailabilityData.GetAsync(date.as_of_date.AsMemory(), mvcConfiguration.FCCUsername.AsMemory(), mvcConfiguration.FCCAPIToken.AsMemory());
-                var toGet = listing.data.Where(x => x.state_name.Equals(state, StringComparison.InvariantCultureIgnoreCase)).Where(x => x.technology_code is not "60" && x.technology_code is not "61");
-                string downloadsPath = Path.GetTempPath();
-                var services = await Service.GetAllAsync(mvcConfiguration.PostgresqlProd);
-                var toLoop = toGet.ToArray();
-                foreach (var item in toLoop)
+                offers.Add(new("WFI", "Sellable", "Fiber Internet 300 Mbps", "300/300 Mbps", 75, FiberInternet300ServiceId, FiberTerms));
+                if (wfi.AsValueEnumerable().Any(x => x.Status is "Sellable" && x.MaxSpeed.StartsWith("1.0G")))
                 {
-                    var files = Directory.GetFiles(downloadsPath);
-                    var file = files.FirstOrDefault(x => x.Contains(item.file_name) && x.EndsWith(".csv"));
-
-                    // Download and unzip, if required.
-                    if (string.IsNullOrWhiteSpace(file))
-                    {
-                        string filePath = await item.DownloadFileAsync(downloadsPath, mvcConfiguration.FCCUsername.AsMemory(), mvcConfiguration.FCCAPIToken.AsMemory());
-                        await ZipFile.ExtractToDirectoryAsync(filePath, downloadsPath);
-                        System.IO.File.Delete(filePath);
-                        files = Directory.GetFiles(downloadsPath);
-                        file = files.FirstOrDefault(x => x.Contains(item.file_name) && x.EndsWith(".csv"));
-                    }
-
-                    if (!string.IsNullOrWhiteSpace(file))
-                    {
-                        using var reader = Sep.Reader().FromFile(file);
-                        foreach (var readRow in reader)
-                        {
-                            if (MemoryExtensions.Equals(readRow["block_geoid"].Span, geoid.AsSpan(), StringComparison.Ordinal))
-                            {
-                                var id = readRow["block_geoid"].ToString();
-                                var frn = readRow["frn"].ToString();
-                                var provider = readRow["brand_name"].ToString();
-                                var down = readRow["max_advertised_download_speed"].Parse<decimal>();
-                                var up = readRow["max_advertised_upload_speed"].Parse<decimal>();
-                                var desc = techDesc.FirstOrDefault(x => x.code == item.technology_code);
-                                var service = services.FirstOrDefault(x => x.Name == item.technology_code_desc);
-                                canidates.Add(new ProviderGeoSpeeds(id, frn, provider, item.technology_code_desc, desc.description, down, up, service.ServiceId));
-                            }
-                        }
-                    }
+                    offers.Add(new("WFI", "Sellable", "Fiber Internet 1 Gbps", "1/1 Gbps", 115, FiberInternet1GServiceId, FiberTerms));
                 }
-
-                var providers = canidates.AsValueEnumerable().Select(x => x.provider).Distinct();
-                var results = new List<ProviderGeoSpeeds>();
-                var quantumPresent = providers.Any(x => x is "Quantum Fiber");
-                foreach (var p in providers)
-                {
-                    var winner = canidates.AsValueEnumerable().Where(x => x.provider == p).MaxBy(x => x.up);
-                    if (!(winner.provider is "CenturyLink" && quantumPresent))
-                    {
-                        results.Add(winner);
-                    }
-                }
-
-                var techs = results.AsValueEnumerable().Select(x => x.technology).Distinct();
-                var singlePerTech = new List<ProviderGeoSpeeds>();
-
-                foreach (var p in techs)
-                {
-                    var speedWinner = canidates.AsValueEnumerable().Where(x => x.technology == p).MaxBy(x => x.up);
-                    singlePerTech.Add(speedWinner);
-                }
-
-                return TypedResults.Ok(singlePerTech.AsValueEnumerable().Where(x => x.up > 0).OrderByDescending(x => x.down).ToArray());
             }
-            else
+            else if (wfi.Length > 0)
             {
-                return TypedResults.BadRequest("No geoid provided (ex: 530330060001014). Please try a different query. 🥺👉👈");
+                offers.Add(new("WFI", "Confirm", "Fiber Internet", "Up to 1/1 Gbps", 0, Guid.Empty, "Fiber may be available here. Contact us to confirm before ordering."));
             }
+
+            if (addresses.AsValueEnumerable().Any(x => x.Product is "EIA" && x.Status is "Quote"))
+            {
+                offers.Add(new("EIA", "Quote", "Ethernet Internet Access", "Dedicated, custom speeds", 0, Guid.Empty, "Dedicated fiber with an SLA. Contact us for a quote."));
+            }
+
+            var matched = addresses.AsValueEnumerable().Select(x => $"{x.StreetAddress.Trim()}, {x.City}, {x.State} {x.Postal}").FirstOrDefault() ?? string.Empty;
+            return TypedResults.Ok(new InternetAvailability(offers.Count > 0, matched, offers.ToArray()));
         }
 
         /// <summary>
