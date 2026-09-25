@@ -441,7 +441,7 @@ namespace NumberSearch.Mvc.Controllers
         [ApiExplorerSettings(IgnoreApi = true)]
         [HttpGet("Cart/Add/{type}/{id}/{quantity}")]
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
-        public async Task<IActionResult> AddToCartAsync([FromRoute] string type, [FromRoute] string id, [FromRoute] int quantity)
+        public async Task<IActionResult> AddToCartAsync([FromRoute] string type, [FromRoute] string id, [FromRoute] int quantity, [FromQuery] string? buildingKey)
         {
             if (!ModelState.IsValid && !string.IsNullOrWhiteSpace(type) && !string.IsNullOrWhiteSpace(id))
             {
@@ -478,7 +478,19 @@ namespace NumberSearch.Mvc.Controllers
                     break;
                 case "Service":
                     var checkService = Guid.TryParse(id, out var serviceId);
-                    if (checkService)
+                    if (checkService && InternetBundle.IsFiberInternet(serviceId))
+                    {
+                        // Fiber can only be bought at an address the Internet page qualified, so we know which building we're installing at.
+                        // Ask whether any listed row for the building can sell this tier, the same rule the Internet page used to offer it.
+                        var rows = await ServiceAddress.GetAllByBuildingKeyAsync("WFI", buildingKey?.Trim() ?? string.Empty, mvcConfiguration.PostgresqlProd);
+                        var qualified = InternetBundle.QualifyingAddress(serviceId, rows);
+                        if (qualified is null)
+                        {
+                            return BadRequest("Check your address on the Internet page before adding fiber internet to your cart.");
+                        }
+                        result = await cart.BuyServiceAsync(serviceId, quantity, qualified);
+                    }
+                    else if (checkService)
                     {
                         result = await cart.BuyServiceAsync(serviceId, quantity);
                     }
@@ -907,7 +919,7 @@ namespace NumberSearch.Mvc.Controllers
             return BadRequest($"Failed to purchase product {productId}.");
         }
 
-        public async Task<IActionResult> BuyServiceAsync(Guid serviceId, int Quantity)
+        public async Task<IActionResult> BuyServiceAsync(Guid serviceId, int Quantity, ServiceAddress? qualifiedAt = null)
         {
             if (!ModelState.IsValid)
             {
@@ -926,7 +938,21 @@ namespace NumberSearch.Mvc.Controllers
 
                 await httpContext.Session.LoadAsync();
                 var cart = Cart.GetFromSession(httpContext.Session);
+
+                // An order records a single fiber service address, so fiber at a second building needs its own order.
+                if (qualifiedAt is not null && InternetBundle.FiberConnections(cart.ProductOrders) > 0
+                    && !string.IsNullOrWhiteSpace(cart.Order.InternetBuildingKey) && cart.Order.InternetBuildingKey != qualifiedAt.BuildingKey)
+                {
+                    return new BadRequestObjectResult($"Your cart already has fiber internet at {cart.Order.InternetServiceAddress}. Please place a separate order for fiber at another address.");
+                }
+
                 var checkAdd = cart.AddService(ref service, ref productOrder);
+
+                if (qualifiedAt is not null)
+                {
+                    cart.Order.InternetServiceAddress = $"{qualifiedAt.StreetAddress.Trim()}, {qualifiedAt.City}, {qualifiedAt.State} {qualifiedAt.Postal}";
+                    cart.Order.InternetBuildingKey = qualifiedAt.BuildingKey;
+                }
 
                 var stdSeat = new Guid("16e2c639-445b-4ae6-9925-07300318206b");
                 var concurrentSeat = new Guid("48eb4627-8692-4a3b-8be1-be64bbeea534");

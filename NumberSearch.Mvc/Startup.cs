@@ -272,11 +272,11 @@ namespace NumberSearch.Mvc
                     return Task.CompletedTask;
                 });
 
-                endpoints.MapGet("/Internet/Providers/Availability​", Endpoints.FCCStateGeoIdLookup)
+                endpoints.MapGet("/Internet/Availability", Endpoints.InternetAvailabilityAsync)
                 .AddOpenApiOperationTransformer((operation, context, ct) =>
                 {
-                    operation.Summary = "Lookup internet provider availability by state and geo ID";
-                    operation.Description = "Get information about internet provider availability in a specific state and geographic area.";
+                    operation.Summary = "Lookup the internet services available at an address";
+                    operation.Description = "Get the fiber and ethernet internet services Accelerate Networks can sell at a specific address, from our providers' building lists. Match by house number, street name, and ZIP code, or by latitude and longitude.";
                     return Task.CompletedTask;
                 }).CacheOutput();
 

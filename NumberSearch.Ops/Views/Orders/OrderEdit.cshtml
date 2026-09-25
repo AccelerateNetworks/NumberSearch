@@ -374,6 +374,36 @@
             </div>
         </div>
     </div>
+    @if (!string.IsNullOrWhiteSpace(Model?.Order?.InternetServiceAddress) || Model?.Order?.InternetTermYears > 0)
+    {
+        // Set by the customer at checkout from the Ziply building list, so these are shown but never posted back.
+        var serviceAddress = Model?.Order?.InternetServiceAddress ?? string.Empty;
+        <h5 class="mb-3">Fiber Internet</h5>
+        <div class="row">
+            <div class="col-12 col-md-6 mb-3">
+                <div class="form-floating">
+                    <input type="text" class="form-control" id="internetServiceAddress" value="@serviceAddress" readonly>
+                    <label for="internetServiceAddress">Service Address</label>
+                </div>
+                @if (!string.IsNullOrWhiteSpace(serviceAddress))
+                {
+                    <div class="form-text"><a href="https://www.google.com/maps/search/?api=1&query=@Uri.EscapeDataString(serviceAddress)" target="_blank" rel="noopener noreferrer">View on a map</a></div>
+                }
+            </div>
+            <div class="col-6 col-md-2 mb-3">
+                <div class="form-floating">
+                    <input type="text" class="form-control" id="internetTermYears" value="@(Model?.Order?.InternetTermYears > 0 ? $"{Model?.Order?.InternetTermYears} years" : "Not set")" readonly>
+                    <label for="internetTermYears">Contract Term</label>
+                </div>
+            </div>
+            <div class="col-6 col-md-4 mb-3">
+                <div class="form-floating">
+                    <input type="text" class="form-control font-monospace" id="internetBuildingKey" value="@Model?.Order?.InternetBuildingKey" readonly>
+                    <label for="internetBuildingKey">Ziply Building Key</label>
+                </div>
+            </div>
+        </div>
+    }
     <div class="row">
         <div class="col-12 col-md-6">
             <div class="form-floating mb-3">

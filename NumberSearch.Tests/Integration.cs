@@ -969,7 +969,7 @@ namespace NumberSearch.Tests
         public async Task TeleDynamicsProductCheckQuantityAsync()
         {
             // Arrange
-            var partNumber = "yea-sip-t54w";
+            var partNumber = "yea-sip-t87w";
             // Act
             var results = await VendorProduct.GetAsync(partNumber, _teleDynamicsUsername, _teleDynamicsPassword);
 

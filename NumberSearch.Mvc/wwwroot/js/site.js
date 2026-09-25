@@ -34,7 +34,7 @@ function escapeHtml(value) {
         .replace(/'/g, '&#39;');
 }
 
-function AddToCart(type, id, quantity, element) {
+function AddToCart(type, id, quantity, element, query) {
     // Default to 1 unit if the "Add to Cart" button is pressed.
     const quantityDisplay = document.getElementById(id);
     if (quantityDisplay == null || quantityDisplay.value == null || quantityDisplay.value.length == 0) {
@@ -56,13 +56,19 @@ function AddToCart(type, id, quantity, element) {
     let spinner = $(element).find('span');
     spinner.removeClass('d-none');
     let route = `/Cart/Add/${type}/${id}/${quantity}`;
+    if (query) {
+        route += `?${query}`;
+    }
     fetch(route)
         .then(response => {
             if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
-                console.log(`Failed to add ${type} ${id} to cart.`)
-                alert(`Failed to add ${type} ${id} to cart.`);
-                spinner.addClass('d-none')
+                // Plain text errors are written for the customer, ex. fiber that needs an address check first.
+                const plainText = (response.headers.get('content-type') ?? '').startsWith('text/plain');
+                return response.text().then(text => {
+                    const error = new Error(`HTTP error! status: ${response.status}`);
+                    error.userMessage = plainText ? text : '';
+                    throw error;
+                });
             }
             return response.text(); // or .text(), .blob(), etc.
         })
@@ -89,7 +95,7 @@ function AddToCart(type, id, quantity, element) {
         .catch(error => {
             console.error('There was a problem with the fetch operation:', error);
             console.log(`Failed to add ${type} ${id} to cart.`)
-            alert(`Failed to add ${type} ${id} to cart.`);
+            alert(error.userMessage || `Failed to add ${type} ${id} to cart.`);
             spinner.addClass('d-none')
         });
 }
