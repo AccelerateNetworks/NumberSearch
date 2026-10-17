@@ -92,6 +92,7 @@
 
 	<ItemGroup>
 	  <ProjectReference Include="..\FirstCom\FirstCom.csproj" />
+	  <ProjectReference Include="..\NumberSearch.DataAccess\NumberSearch.DataAccess.csproj" />
 	</ItemGroup>
 
 </Project>
