@@ -27,6 +27,8 @@
 		<PackageReference Include="Npgsql" Version="10.0.3" />
 		<PackageReference Include="PhoneNumbersNA" Version="1.0.19" />
 		<PackageReference Include="Serilog" Version="4.4.0" />
+		<!-- Pin above the transitive 10.0.0 to clear CVE-2026-70162 and CVE-2026-84008; flows to every project via this reference. -->
+		<PackageReference Include="System.Security.Cryptography.Pkcs" Version="10.0.13" />
 	</ItemGroup>
 
 	<ItemGroup>
