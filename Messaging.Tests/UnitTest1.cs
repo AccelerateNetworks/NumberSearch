@@ -21,6 +21,7 @@ namespace Messaging.Tests
     public class Functional : IClassFixture<WebApplicationFactory<Program>>
     {
         private readonly HttpClient _httpClient;
+        private readonly WebApplicationFactory<Program> _factory;
         private readonly IConfiguration _configuration;
         private readonly ITestOutputHelper _output;
         private readonly AppSettings _appSettings;
@@ -28,6 +29,7 @@ namespace Messaging.Tests
 
         public Functional(WebApplicationFactory<Program> factory, ITestOutputHelper output)
         {
+            _factory = factory;
             _httpClient = factory.CreateClient();
             _configuration = new ConfigurationBuilder()
                 .AddJsonFile("appsettings.json")
@@ -179,6 +181,51 @@ namespace Messaging.Tests
             var details = await response.Content.ReadFromJsonAsync<SendMessageResponse>();
             Assert.NotNull(details);
             _output.WriteLine(await response.Content.ReadAsStringAsync());
+            Assert.True(response.IsSuccessStatusCode);
+            Assert.True(details.MessageSent);
+        }
+
+        // A FusionPBX API key that does not own the sending MSISDN must be rejected. This is the core security
+        // guarantee for #512: a customer's key can only send from numbers registered to their FusionPBX domain.
+        [Fact]
+        public async Task SendSMSWithFusionPBXKeyForUnownedNumberIsRejectedAsync()
+        {
+            string apiKey = _configuration.GetConnectionString("FusionPBXTestApiKey") ?? string.Empty;
+            Assert.SkipWhen(string.IsNullOrWhiteSpace(apiKey), "No FusionPBXTestApiKey configured; skipping FusionPBX ownership test.");
+
+            var client = _factory.CreateClient();
+            client.DefaultRequestHeaders.Authorization = new("Bearer", apiKey);
+
+            // 5555551212 is a reserved/fictional number that no real FusionPBX domain will have as a destination.
+            var message = new SendMessageRequest { MediaURLs = [], Message = "This should be rejected.", MSISDN = "5555551212", To = "2068589312" };
+            var response = await client.PostAsJsonAsync("/message/send?test=true", message);
+            var details = await response.Content.ReadFromJsonAsync<SendMessageResponse>();
+
+            _output.WriteLine(await response.Content.ReadAsStringAsync());
+            Assert.NotNull(details);
+            Assert.False(details.MessageSent);
+            Assert.Contains("not registered to your account", details.Message);
+        }
+
+        // A FusionPBX API key sending from a number it owns should be accepted. Requires a real key plus a number
+        // that is a destination in that key's domain, both supplied via configuration.
+        [Fact]
+        public async Task SendSMSWithFusionPBXKeyForOwnedNumberIsAcceptedAsync()
+        {
+            string apiKey = _configuration.GetConnectionString("FusionPBXTestApiKey") ?? string.Empty;
+            string ownedNumber = _configuration.GetConnectionString("FusionPBXTestOwnedNumber") ?? string.Empty;
+            Assert.SkipWhen(string.IsNullOrWhiteSpace(apiKey) || string.IsNullOrWhiteSpace(ownedNumber),
+                "No FusionPBXTestApiKey / FusionPBXTestOwnedNumber configured; skipping FusionPBX ownership test.");
+
+            var client = _factory.CreateClient();
+            client.DefaultRequestHeaders.Authorization = new("Bearer", apiKey);
+
+            var message = new SendMessageRequest { MediaURLs = [], Message = "This is an owned-number test.", MSISDN = ownedNumber, To = ownedNumber };
+            var response = await client.PostAsJsonAsync("/message/send?test=true", message);
+            var details = await response.Content.ReadFromJsonAsync<SendMessageResponse>();
+
+            _output.WriteLine(await response.Content.ReadAsStringAsync());
+            Assert.NotNull(details);
             Assert.True(response.IsSuccessStatusCode);
             Assert.True(details.MessageSent);
         }
