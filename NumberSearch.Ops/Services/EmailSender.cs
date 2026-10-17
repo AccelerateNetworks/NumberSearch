@@ -13,9 +13,14 @@ namespace NumberSearch.Ops.Services
     {
         public async Task SendEmailAsync(string email, string subject, string htmlMessage)
         {
+            string smtpUsername = configuration.GetConnectionString("SmtpUsername")
+                ?? throw new System.InvalidOperationException("ConnectionStrings:SmtpUsername is not configured.");
+            string smtpPassword = configuration.GetConnectionString("SmtpPassword")
+                ?? throw new System.InvalidOperationException("ConnectionStrings:SmtpPassword is not configured.");
+
             var outboundMessage = new MimeKit.MimeMessage
             {
-                Sender = new MimeKit.MailboxAddress("Number Search", configuration.GetConnectionString("SmtpUsername")),
+                Sender = new MimeKit.MailboxAddress("Number Search", smtpUsername),
                 Subject = subject
             };
 
@@ -24,7 +29,7 @@ namespace NumberSearch.Ops.Services
                 HtmlBody = @$"<!DOCTYPE html><html><head><title></title></head><body><p>{htmlMessage}<p></body></html>"
             };
 
-            var ordersInbox = MailboxAddress.Parse(configuration.GetConnectionString("SmtpUsername"));
+            var ordersInbox = MailboxAddress.Parse(smtpUsername);
             var recipient = MailboxAddress.Parse(email);
 
 
@@ -39,7 +44,7 @@ namespace NumberSearch.Ops.Services
             smtp.ServerCertificateValidationCallback = (s, c, h, e) => true;
 
             await smtp.ConnectAsync("witcher.mxrouting.net", 587, SecureSocketOptions.StartTls).ConfigureAwait(false);
-            await smtp.AuthenticateAsync(configuration.GetConnectionString("SmtpUsername"), configuration.GetConnectionString("SmtpPassword")).ConfigureAwait(false);
+            await smtp.AuthenticateAsync(smtpUsername, smtpPassword).ConfigureAwait(false);
             await smtp.SendAsync(outboundMessage).ConfigureAwait(false);
             await smtp.DisconnectAsync(true).ConfigureAwait(false);
         }

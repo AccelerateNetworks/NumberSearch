@@ -44,6 +44,7 @@ namespace NumberSearch.Mvc.Controllers
         /// <param name="city"></param>
         /// <param name="failed"></param>
         /// <param name="view"></param>
+        /// <param name="token"> An optional bypass token that skips the lead capture introduction. </param>
         /// <param name="page"></param>
         /// <returns> A view of nothing, or the result of the query. </returns>
         [HttpGet("Search")]

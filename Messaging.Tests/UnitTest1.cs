@@ -132,8 +132,8 @@ namespace Messaging.Tests
         public async Task GetAllClientsAsync()
         {
             var _client = await GetHttpClientWithValidBearerTokenAsync();
-            var response = await _client.GetAsync("/client/all?page=1");
-            var clients = await response.Content.ReadFromJsonAsync<ClientRegistration[]>();
+            var response = await _client.GetAsync("/client/all?page=1", TestContext.Current.CancellationToken);
+            var clients = await response.Content.ReadFromJsonAsync<ClientRegistration[]>(cancellationToken: TestContext.Current.CancellationToken);
             Assert.NotNull(clients);
             Assert.NotEmpty(clients);
         }
@@ -144,8 +144,8 @@ namespace Messaging.Tests
         public async Task GetAllMessagesAsync()
         {
             var _client = await GetHttpClientWithValidBearerTokenAsync();
-            var response = await _client.GetAsync("/message/all");
-            var clients = await response.Content.ReadFromJsonAsync<MessageRecord[]>();
+            var response = await _client.GetAsync("/message/all", TestContext.Current.CancellationToken);
+            var clients = await response.Content.ReadFromJsonAsync<MessageRecord[]>(cancellationToken: TestContext.Current.CancellationToken);
             Assert.NotNull(clients);
             Assert.NotEmpty(clients);
         }
@@ -162,13 +162,13 @@ namespace Messaging.Tests
                     new KeyValuePair<string, string>("message", "Your Lyft code is 12345"),
                 ]);
 
-            var response = await _httpClient.PostAsync($"{route}?token={token}", stringContent);
+            var response = await _httpClient.PostAsync($"{route}?token={token}", stringContent, TestContext.Current.CancellationToken);
 
             Assert.NotNull(response);
-            _output.WriteLine(await response.Content.ReadAsStringAsync());
+            _output.WriteLine(await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken));
             Assert.False(response.IsSuccessStatusCode);
             Assert.True(response.StatusCode is System.Net.HttpStatusCode.BadRequest);
-            var message = await response.Content.ReadAsStringAsync();
+            var message = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
             Assert.Equal("\"To 14445556543 could not be parsed as valid NANP (North American Numbering Plan) numbers. msisdn:15555551212,to:14445556543,message:Your Lyft code is 12345\"", message);
         }
 
@@ -177,10 +177,10 @@ namespace Messaging.Tests
         {
             var _client = await GetHttpClientWithValidBearerTokenAsync();
             var message = new SendMessageRequest { MediaURLs = [], Message = "This is an SMS Message test.", MSISDN = "2068589313", To = "2068589312" };
-            var response = await _client.PostAsJsonAsync("/message/send?test=true", message);
-            var details = await response.Content.ReadFromJsonAsync<SendMessageResponse>();
+            var response = await _client.PostAsJsonAsync("/message/send?test=true", message, cancellationToken: TestContext.Current.CancellationToken);
+            var details = await response.Content.ReadFromJsonAsync<SendMessageResponse>(cancellationToken: TestContext.Current.CancellationToken);
             Assert.NotNull(details);
-            _output.WriteLine(await response.Content.ReadAsStringAsync());
+            _output.WriteLine(await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken));
             Assert.True(response.IsSuccessStatusCode);
             Assert.True(details.MessageSent);
         }
@@ -198,10 +198,10 @@ namespace Messaging.Tests
 
             // 5555551212 is a reserved/fictional number that no real FusionPBX domain will have as a destination.
             var message = new SendMessageRequest { MediaURLs = [], Message = "This should be rejected.", MSISDN = "5555551212", To = "2068589312" };
-            var response = await client.PostAsJsonAsync("/message/send?test=true", message);
-            var details = await response.Content.ReadFromJsonAsync<SendMessageResponse>();
+            var response = await client.PostAsJsonAsync("/message/send?test=true", message, cancellationToken: TestContext.Current.CancellationToken);
+            var details = await response.Content.ReadFromJsonAsync<SendMessageResponse>(cancellationToken: TestContext.Current.CancellationToken);
 
-            _output.WriteLine(await response.Content.ReadAsStringAsync());
+            _output.WriteLine(await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken));
             Assert.NotNull(details);
             Assert.False(details.MessageSent);
             Assert.Contains("not registered to your account", details.Message);
@@ -221,10 +221,10 @@ namespace Messaging.Tests
             client.DefaultRequestHeaders.Authorization = new("Bearer", apiKey);
 
             var message = new SendMessageRequest { MediaURLs = [], Message = "This is an owned-number test.", MSISDN = ownedNumber, To = ownedNumber };
-            var response = await client.PostAsJsonAsync("/message/send?test=true", message);
-            var details = await response.Content.ReadFromJsonAsync<SendMessageResponse>();
+            var response = await client.PostAsJsonAsync("/message/send?test=true", message, cancellationToken: TestContext.Current.CancellationToken);
+            var details = await response.Content.ReadFromJsonAsync<SendMessageResponse>(cancellationToken: TestContext.Current.CancellationToken);
 
-            _output.WriteLine(await response.Content.ReadAsStringAsync());
+            _output.WriteLine(await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken));
             Assert.NotNull(details);
             Assert.True(response.IsSuccessStatusCode);
             Assert.True(details.MessageSent);
@@ -313,10 +313,10 @@ namespace Messaging.Tests
         {
             var _client = await GetHttpClientWithValidBearerTokenAsync();
             var message = new SendMessageRequest { MediaURLs = [], Message = "This is an SMS Group Message test.", MSISDN = "12068589313", To = "12068589312,12068589313,15036622288" };
-            var response = await _client.PostAsJsonAsync("/message/send?test=true", message);
-            var details = await response.Content.ReadFromJsonAsync<SendMessageResponse>();
+            var response = await _client.PostAsJsonAsync("/message/send?test=true", message, cancellationToken: TestContext.Current.CancellationToken);
+            var details = await response.Content.ReadFromJsonAsync<SendMessageResponse>(cancellationToken: TestContext.Current.CancellationToken);
             Assert.NotNull(details);
-            _output.WriteLine(await response.Content.ReadAsStringAsync());
+            _output.WriteLine(await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken));
             Assert.True(response.IsSuccessStatusCode);
             Assert.True(details.MessageSent);
         }
@@ -333,8 +333,8 @@ namespace Messaging.Tests
                     new KeyValuePair<string, string>("messagebody", "Your Lyft code is 12345"),
 
                 ]);
-            var response = await _httpClient.PostAsync("/message/send/test", stringContent);
-            _output.WriteLine(await response.Content.ReadAsStringAsync());
+            var response = await _httpClient.PostAsync("/message/send/test", stringContent, TestContext.Current.CancellationToken);
+            _output.WriteLine(await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken));
             Assert.True(response.IsSuccessStatusCode);
         }
 
@@ -350,8 +350,8 @@ namespace Messaging.Tests
                 Content = "This is a test forwarded message.",
                 MessageType = MessageType.SMS,
             };
-            var response = await _httpClient.PostAsJsonAsync("/message/forward/test", toForward);
-            _output.WriteLine(await response.Content.ReadAsStringAsync());
+            var response = await _httpClient.PostAsJsonAsync("/message/forward/test", toForward, cancellationToken: TestContext.Current.CancellationToken);
+            _output.WriteLine(await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken));
             Assert.True(response.IsSuccessStatusCode);
         }
 
@@ -368,11 +368,11 @@ namespace Messaging.Tests
                     new KeyValuePair<string, string>("message", "Your Lyft code is 12345"),
                 ]);
 
-            var response = await _httpClient.PostAsync($"{route}?token={token}", stringContent);
-            _output.WriteLine(await response.Content.ReadAsStringAsync());
+            var response = await _httpClient.PostAsync($"{route}?token={token}", stringContent, TestContext.Current.CancellationToken);
+            _output.WriteLine(await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken));
             Assert.False(response.IsSuccessStatusCode);
             Assert.True(response.StatusCode is System.Net.HttpStatusCode.Unauthorized);
-            Assert.Equal("", await response.Content.ReadAsStringAsync());
+            Assert.Equal("", await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken));
         }
 
         [Fact]
@@ -385,8 +385,8 @@ namespace Messaging.Tests
                     new KeyValuePair<string, string>(string.Empty, string.Empty),
                 ]);
 
-            var response = await _httpClient.PostAsync($"{route}", stringContent);
-            _output.WriteLine(await response.Content.ReadAsStringAsync());
+            var response = await _httpClient.PostAsync($"{route}", stringContent, TestContext.Current.CancellationToken);
+            _output.WriteLine(await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken));
             Assert.False(response.IsSuccessStatusCode);
             Assert.True(response.StatusCode is System.Net.HttpStatusCode.BadRequest);
         }
@@ -396,8 +396,8 @@ namespace Messaging.Tests
         {
             var _httpClient = await GetHttpClientWithValidBearerTokenAsync();
             var registrationRequest = new RegistrationRequest() { CallbackUrl = "https://sms.callpipe.com/message/forward/test", ClientSecret = "thisisatest", DialedNumber = "12068589313" };
-            var response = await _httpClient.PostAsJsonAsync("/client/register", registrationRequest);
-            var data = await response.Content.ReadFromJsonAsync<RegistrationResponse>();
+            var response = await _httpClient.PostAsJsonAsync("/client/register", registrationRequest, cancellationToken: TestContext.Current.CancellationToken);
+            var data = await response.Content.ReadFromJsonAsync<RegistrationResponse>(cancellationToken: TestContext.Current.CancellationToken);
             Assert.NotNull(data);
             _output.WriteLine(System.Text.Json.JsonSerializer.Serialize(data));
             Assert.True(data.Registered);
@@ -412,11 +412,11 @@ namespace Messaging.Tests
                     new KeyValuePair<string, string>("message", "screams in javascript"),
                 ]);
 
-            response = await _httpClient.PostAsync($"{route}?token={token}", stringContent);
-            _output.WriteLine(await response.Content.ReadAsStringAsync());
+            response = await _httpClient.PostAsync($"{route}?token={token}", stringContent, TestContext.Current.CancellationToken);
+            _output.WriteLine(await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken));
             Assert.True(response.IsSuccessStatusCode);
             Assert.True(response.StatusCode is System.Net.HttpStatusCode.OK);
-            Assert.Equal("\"The incoming message was received and forwarded to the client.\"", await response.Content.ReadAsStringAsync());
+            Assert.Equal("\"The incoming message was received and forwarded to the client.\"", await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken));
         }
 
         [Fact]
@@ -433,13 +433,13 @@ namespace Messaging.Tests
 
                 ]);
 
-            var response = await _httpClient.PostAsync($"{route}?token={token}", stringContent);
+            var response = await _httpClient.PostAsync($"{route}?token={token}", stringContent, TestContext.Current.CancellationToken);
 
             Assert.NotNull(response);
-            _output.WriteLine(await response.Content.ReadAsStringAsync());
+            _output.WriteLine(await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken));
             Assert.False(response.IsSuccessStatusCode);
             Assert.True(response.StatusCode is System.Net.HttpStatusCode.BadRequest);
-            var message = await response.Content.ReadAsStringAsync();
+            var message = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
             Assert.Equal("\"12068589311 is not registered as a client.\"", message);
         }
 
@@ -448,8 +448,8 @@ namespace Messaging.Tests
         {
             var _httpClient = await GetHttpClientWithValidBearerTokenAsync();
             var registrationRequest = new RegistrationRequest() { CallbackUrl = "https://sms.callpipe.com/message/forward/test", ClientSecret = "thisisatest", DialedNumber = "12068589312" };
-            var response = await _httpClient.PostAsJsonAsync("/client/register", registrationRequest);
-            var data = await response.Content.ReadFromJsonAsync<RegistrationResponse>();
+            var response = await _httpClient.PostAsJsonAsync("/client/register", registrationRequest, cancellationToken: TestContext.Current.CancellationToken);
+            var data = await response.Content.ReadFromJsonAsync<RegistrationResponse>(cancellationToken: TestContext.Current.CancellationToken);
             Assert.NotNull(data);
             Assert.True(data.Registered);
 
@@ -463,13 +463,13 @@ namespace Messaging.Tests
                     new KeyValuePair<string, string>("message", "Hello, this is 1stPoint SMS :D"),
                 ]);
 
-            response = await _httpClient.PostAsync($"{route}?token={token}", stringContent);
+            response = await _httpClient.PostAsync($"{route}?token={token}", stringContent, TestContext.Current.CancellationToken);
 
             Assert.NotNull(response);
-            _output.WriteLine(await response.Content.ReadAsStringAsync());
+            _output.WriteLine(await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken));
             Assert.True(response.IsSuccessStatusCode);
             Assert.True(response.StatusCode is System.Net.HttpStatusCode.OK);
-            var message = await response.Content.ReadAsStringAsync();
+            var message = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
             Assert.Equal("\"The incoming message was received and forwarded to the client.\"", message);
         }
 
@@ -478,8 +478,8 @@ namespace Messaging.Tests
         {
             var _httpClient = await GetHttpClientWithValidBearerTokenAsync();
             var registrationRequest = new RegistrationRequest() { CallbackUrl = "https://sms.callpipe.com/message/forward/test", ClientSecret = "thisisatest", DialedNumber = "12068589310" };
-            var response = await _httpClient.PostAsJsonAsync("/client/register", registrationRequest);
-            var data = await response.Content.ReadFromJsonAsync<RegistrationResponse>();
+            var response = await _httpClient.PostAsJsonAsync("/client/register", registrationRequest, cancellationToken: TestContext.Current.CancellationToken);
+            var data = await response.Content.ReadFromJsonAsync<RegistrationResponse>(cancellationToken: TestContext.Current.CancellationToken);
             Assert.NotNull(data);
             Assert.True(data.Registered);
 
@@ -493,13 +493,13 @@ namespace Messaging.Tests
                     new KeyValuePair<string, string>("message", "CenturyLink: Payment to be applied on 05/05/2023. Text HELP for help, NOREMINDER to stop pay alerts, STOP to stop all alerts. Msg&data rates may apply."),
                 ]);
 
-            response = await _httpClient.PostAsync($"{route}?token={token}", stringContent);
+            response = await _httpClient.PostAsync($"{route}?token={token}", stringContent, TestContext.Current.CancellationToken);
 
             Assert.NotNull(response);
-            _output.WriteLine(await response.Content.ReadAsStringAsync());
+            _output.WriteLine(await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken));
             Assert.True(response.IsSuccessStatusCode);
             Assert.True(response.StatusCode is not System.Net.HttpStatusCode.BadRequest);
-            var message = await response.Content.ReadAsStringAsync();
+            var message = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
             Assert.Equal("\"The incoming message was received and forwarded to the client.\"", message);
         }
 
@@ -508,9 +508,9 @@ namespace Messaging.Tests
         {
             var _httpClient = await GetHttpClientWithValidBearerTokenAsync();
             var registrationRequest = new RegistrationRequest() { CallbackUrl = "https://sms.callpipe.com/message/forward/test", ClientSecret = "thisisatest", DialedNumber = "12068991741" };
-            var response = await _httpClient.PostAsJsonAsync("/client/register", registrationRequest);
+            var response = await _httpClient.PostAsJsonAsync("/client/register", registrationRequest, cancellationToken: TestContext.Current.CancellationToken);
             //var x = await response.Content.ReadAsStringAsync();
-            var data = await response.Content.ReadFromJsonAsync<RegistrationResponse>();
+            var data = await response.Content.ReadFromJsonAsync<RegistrationResponse>(cancellationToken: TestContext.Current.CancellationToken);
             Assert.NotNull(data);
             Assert.True(data.Registered);
 
@@ -525,10 +525,10 @@ namespace Messaging.Tests
                     new KeyValuePair<string, string>("message", "Verizon:+DO+NOT+Share+this+Forgot+Password+code.+A+Verizon+representative+will+NEVER+call+you+or+text+you+for+this+code.+Code+059089."),
                 ]);
 
-            response = await _httpClient.PostAsync($"{route}?token={token}", stringContent);
+            response = await _httpClient.PostAsync($"{route}?token={token}", stringContent, TestContext.Current.CancellationToken);
 
             Assert.NotNull(response);
-            _output.WriteLine(await response.Content.ReadAsStringAsync());
+            _output.WriteLine(await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken));
             Assert.True(response.IsSuccessStatusCode);
             Assert.True(response.StatusCode is not System.Net.HttpStatusCode.BadRequest);
         }
@@ -540,8 +540,8 @@ namespace Messaging.Tests
             // TODO: Go to the API and get the most recent inbound mms.
             var _httpClient = await GetHttpClientWithValidBearerTokenAsync();
             var registrationRequest = new RegistrationRequest() { CallbackUrl = "https://sms.callpipe.com/message/forward/test", ClientSecret = "thisisatest", DialedNumber = "12069102308" };
-            var response = await _httpClient.PostAsJsonAsync("/client/register", registrationRequest);
-            var data = await response.Content.ReadFromJsonAsync<RegistrationResponse>();
+            var response = await _httpClient.PostAsJsonAsync("/client/register", registrationRequest, cancellationToken: TestContext.Current.CancellationToken);
+            var data = await response.Content.ReadFromJsonAsync<RegistrationResponse>(cancellationToken: TestContext.Current.CancellationToken);
             Assert.NotNull(data);
             Assert.True(data.Registered);
 
@@ -557,13 +557,13 @@ namespace Messaging.Tests
                     new KeyValuePair<string, string>("host", "12062597949"),
                 ]);
 
-            response = await _httpClient.PostAsync($"{route}?token={token}", stringContent);
+            response = await _httpClient.PostAsync($"{route}?token={token}", stringContent, TestContext.Current.CancellationToken);
 
             Assert.NotNull(response);
-            _output.WriteLine(await response.Content.ReadAsStringAsync());
+            _output.WriteLine(await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken));
             Assert.True(response.IsSuccessStatusCode);
             Assert.True(response.StatusCode is System.Net.HttpStatusCode.OK);
-            var message = await response.Content.ReadAsStringAsync();
+            var message = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
             Assert.Equal("\"The incoming message was received and forwarded to the client.\"", message);
         }
 
@@ -585,13 +585,13 @@ namespace Messaging.Tests
                     new KeyValuePair<string, string>("FullRecipientList", ","),
                 ]);
 
-            var response = await _httpClient.PostAsync($"{route}?token={token}", stringContent);
+            var response = await _httpClient.PostAsync($"{route}?token={token}", stringContent, TestContext.Current.CancellationToken);
 
             Assert.NotNull(response);
-            _output.WriteLine(await response.Content.ReadAsStringAsync());
+            _output.WriteLine(await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken));
             Assert.True(response.IsSuccessStatusCode);
             Assert.True(response.StatusCode is not System.Net.HttpStatusCode.BadRequest);
-            var message = await response.Content.ReadAsStringAsync();
+            var message = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
             Assert.Equal("\"The incoming message was received and forwarded to the client.\"", message);
         }
 

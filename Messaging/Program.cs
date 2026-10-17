@@ -1584,13 +1584,13 @@ public static class Endpoints
             var fusionPBXUser = await FusionPBXAuth.AuthenticateAsync(context, appSettings.ConnectionStrings.FusionPBXConnectionString);
             if (fusionPBXUser.IsAuthenticated())
             {
-                bool ownsSender = await fusionPBXUser.OwnsNumberAsync(message?.MSISDN ?? string.Empty, appSettings.ConnectionStrings.FusionPBXConnectionString);
+                bool ownsSender = await fusionPBXUser.OwnsNumberAsync(message.MSISDN, appSettings.ConnectionStrings.FusionPBXConnectionString);
                 if (!ownsSender)
                 {
                     return TypedResults.BadRequest(new SendMessageResponse
                     {
                         MessageSent = false,
-                        Message = $"The number {message?.MSISDN} is not registered to your account. You may only send messages from phone numbers you own."
+                        Message = $"The number {message.MSISDN} is not registered to your account. You may only send messages from phone numbers you own."
                     });
                 }
             }
@@ -2458,6 +2458,15 @@ namespace Models
             foreach (var uid in recentAndUnanswered)
             {
                 var message = await inbox.GetMessageAsync(uid);
+
+                // Skip malformed emails rather than throwing on a missing subject or plain text body.
+                if (string.IsNullOrWhiteSpace(message.Subject) || message.TextBody is null)
+                {
+                    Log.Warning("[Email] Skipped inbound email {MessageId} because it has no subject or plain text body.", message.MessageId);
+                    _ = await inbox.StoreAsync(uid, new StoreFlagsRequest(StoreAction.Add, MessageFlags.Seen) { Silent = true }, cls);
+                    continue;
+                }
+
                 var fromNumberStart = message.Subject.IndexOf("from 1");
                 var toNumberStart = message.Subject.IndexOf("to 1");
                 var justTheText = message.TextBody.Split(Environment.NewLine);

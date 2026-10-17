@@ -1,15 +1,13 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
-using Microsoft.Extensions.Logging;
 
 using System.Threading.Tasks;
 
 namespace NumberSearch.Ops.Areas.Identity.Pages.Account.Manage
 {
     public class PersonalDataModel(
-        UserManager<IdentityUser> userManager,
-        ILogger<PersonalDataModel> logger) : PageModel
+        UserManager<IdentityUser> userManager) : PageModel
     {
         public async Task<IActionResult> OnGet()
         {
