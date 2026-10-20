@@ -153,13 +153,20 @@ try
     builder.Services.AddHttpContextAccessor();
     builder.Services.AddScoped<Microsoft.AspNetCore.Authorization.IAuthorizationHandler, ApiAccessHandler>();
 
-    builder.Services.AddAuthorizationBuilder().AddPolicy("api", p =>
-    {
-        // Satisfied by an authenticated Identity (ops) user OR a valid FusionPBX API key. The scheme is still added
-        // so that Identity bearer tokens are parsed into a principal; the requirement handles the FusionPBX fallback.
-        p.AddAuthenticationSchemes(IdentityConstants.BearerScheme);
-        p.Requirements.Add(new ApiAccessRequirement());
-    });
+    builder.Services.AddAuthorizationBuilder()
+        // Staff only: an authenticated ops.acceleratenetworks.com Identity user.
+        .AddPolicy("api", p =>
+        {
+            p.RequireAuthenticatedUser();
+            p.AddAuthenticationSchemes(IdentityConstants.BearerScheme);
+        })
+        // Staff OR a valid FusionPBX API key. Only apply this to endpoints that enforce per-number ownership
+        // for FusionPBX callers inside the handler, since this policy can't know which number a request targets.
+        .AddPolicy("api-or-fusionpbx", p =>
+        {
+            p.AddAuthenticationSchemes(IdentityConstants.BearerScheme);
+            p.Requirements.Add(new ApiAccessRequirement());
+        });
 
     builder.Services.Configure<ForwardedHeadersOptions>(options =>
     {
@@ -271,7 +278,7 @@ try
         });
 
     app.MapPost("/client/register", Endpoints.RegisterClientAsync)
-        .RequireAuthorization("api")
+        .RequireAuthorization("api-or-fusionpbx")
         .AddOpenApiOperationTransformer((operation, context, ct) =>
         {
             operation.Summary = "Register a client";
@@ -298,7 +305,7 @@ try
         });
 
     app.MapGet("/message/all", Endpoints.AllMessagesAsync)
-        .RequireAuthorization("api")
+        .RequireAuthorization("api-or-fusionpbx")
         .AddOpenApiOperationTransformer((operation, context, ct) =>
         {
             operation.Summary = "View all sent and received messages";
@@ -325,7 +332,7 @@ try
         });
 
     app.MapPost("/message/send", Endpoints.SendMessageAsync)
-        .RequireAuthorization("api")
+        .RequireAuthorization("api-or-fusionpbx")
         .AddOpenApiOperationTransformer((operation, context, ct) =>
         {
             operation.Summary = "Send an SMS or MMS Message";
@@ -395,7 +402,7 @@ try
     {
         if (token != appSettings.ConnectionStrings.PComNetIncomingToken)
         {
-            Log.Warning("Token is not valid. Token: {Token} is not {ConfigToken}", token, appSettings.ConnectionStrings.PComNetIncomingToken);
+            Log.Warning("Rejected an inbound MMS request with an invalid token.");
             return TypedResults.Unauthorized();
         }
 
@@ -1378,6 +1385,39 @@ public static class Endpoints
         }
     }
 
+    /// <summary>
+    /// Message history for a FusionPBX customer. Limited to messages since the number was added to their FusionPBX
+    /// domain, so a new holder of a number can't read the previous holder's messages, and stripped of the raw vendor
+    /// request and response and the forwarding payload, which are for staff debugging only.
+    /// </summary>
+    private static async Task<Results<Ok<MessageRecord[]>, NotFound<string>, BadRequest<string>>>
+        CustomerMessageHistoryAsync(MessagingContext db, string asDialed, DateTime? ownedSince)
+    {
+        if (!PhoneNumbersNA.PhoneNumber.TryParse(asDialed, out var phoneNumber) || string.IsNullOrWhiteSpace(phoneNumber.DialedNumber))
+        {
+            return TypedResults.BadRequest($"{asDialed} couldn't be parsed as a valid phone number.");
+        }
+
+        string dialed = phoneNumber.Type is PhoneNumbersNA.NumberType.ShortCode ? phoneNumber.DialedNumber : $"1{phoneNumber.DialedNumber}";
+        DateTime since = ownedSince ?? DateTime.MinValue;
+
+        var messages = await db.Messages.AsNoTracking()
+            .Where(x => (x.From == dialed || x.To.Contains(dialed)) && x.DateReceivedUTC >= since)
+            .OrderByDescending(x => x.DateReceivedUTC)
+            .ToArrayAsync();
+
+        foreach (var message in messages)
+        {
+            message.RawRequest = string.Empty;
+            message.RawResponse = string.Empty;
+            message.ToForward = string.Empty;
+        }
+
+        return messages.Length > 0
+            ? TypedResults.Ok(messages)
+            : TypedResults.NotFound($"No messages have been recorded for {dialed}.");
+    }
+
     public static async Task<Results<Ok<MessageRecord[]>, NotFound<string>, BadRequest<string>>>
         AllMessagesAsync(MessagingContext db, string? asDialed, AppSettings appSettings, HttpContext? context = null)
     {
@@ -1392,11 +1432,13 @@ public static class Endpoints
                     return TypedResults.BadRequest("The asDialed parameter is required. You may only view messages for phone numbers you own.");
                 }
 
-                bool ownsNumber = await fusionPBXUser.OwnsNumberAsync(asDialed, appSettings.ConnectionStrings.FusionPBXConnectionString);
-                if (!ownsNumber)
+                var destination = await fusionPBXUser.GetOwnedDestinationAsync(asDialed, appSettings.ConnectionStrings.FusionPBXConnectionString);
+                if (destination.destination_uuid == Guid.Empty)
                 {
                     return TypedResults.BadRequest($"The number {asDialed} is not registered to your account. You may only view messages for phone numbers you own.");
                 }
+
+                return await CustomerMessageHistoryAsync(db, asDialed, destination.insert_date);
             }
         }
 
@@ -1895,7 +1937,7 @@ public static class Endpoints
                         MediaURLs = string.Empty,
                         MessageSource = MessageSource.Outgoing,
                         MessageType = MessageType.SMS,
-                        RawRequest = System.Text.Json.JsonSerializer.Serialize(toForward),
+                        RawRequest = toForward.ToRedactedJson(),
                         RawResponse = System.Text.Json.JsonSerializer.Serialize(sendMessage),
                         Succeeded = true
                     };
@@ -1922,7 +1964,7 @@ public static class Endpoints
                         MediaURLs = string.Empty,
                         MessageSource = MessageSource.Outgoing,
                         MessageType = MessageType.SMS,
-                        RawRequest = System.Text.Json.JsonSerializer.Serialize(toForward),
+                        RawRequest = toForward.ToRedactedJson(),
                         RawResponse = System.Text.Json.JsonSerializer.Serialize(sendMessage)
                     };
 
@@ -1948,7 +1990,7 @@ public static class Endpoints
                 MediaURLs = string.Empty,
                 MessageSource = MessageSource.Outgoing,
                 MessageType = message?.MediaURLs.Length > 0 ? MessageType.MMS : MessageType.SMS,
-                RawRequest = System.Text.Json.JsonSerializer.Serialize(toForward),
+                RawRequest = toForward.ToRedactedJson(),
                 RawResponse = error
             };
 
@@ -1974,7 +2016,7 @@ public static class Endpoints
                     MediaURLs = string.Empty,
                     MessageSource = MessageSource.Outgoing,
                     MessageType = message?.MediaURLs.Length > 0 ? MessageType.MMS : MessageType.SMS,
-                    RawRequest = System.Text.Json.JsonSerializer.Serialize(toForward),
+                    RawRequest = toForward.ToRedactedJson(),
                     RawResponse = ex.Message
                 };
 
@@ -2648,6 +2690,18 @@ namespace Models
         public string to { get; set; } = string.Empty;
         public string msisdn { get; set; } = string.Empty;
         public string messagebody { get; set; } = string.Empty;
+
+        /// <summary>
+        /// The request as JSON with the vendor credentials removed, for storing on the message record.
+        /// </summary>
+        public string ToRedactedJson() => System.Text.Json.JsonSerializer.Serialize(new toForwardOutbound
+        {
+            username = "[redacted]",
+            password = "[redacted]",
+            to = to,
+            msisdn = msisdn,
+            messagebody = messagebody
+        });
     }
 
     public class UsageSummary

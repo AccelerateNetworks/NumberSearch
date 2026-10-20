@@ -207,6 +207,26 @@ namespace Messaging.Tests
             Assert.Contains("not registered to your account", details.Message);
         }
 
+        // A FusionPBX API key must only reach the endpoints that enforce per-number ownership. Staff endpoints
+        // that list or change every customer's data have to reject it.
+        [Theory]
+        [InlineData("/client/all")]
+        [InlineData("/message/all/failed")]
+        [InlineData("/client/usage")]
+        public async Task FusionPBXKeyCannotReachStaffEndpointsAsync(string route)
+        {
+            string apiKey = _configuration.GetConnectionString("FusionPBXTestApiKey") ?? string.Empty;
+            Assert.SkipWhen(string.IsNullOrWhiteSpace(apiKey), "No FusionPBXTestApiKey configured; skipping FusionPBX authorization test.");
+
+            var client = _factory.CreateClient();
+            client.DefaultRequestHeaders.Authorization = new("Bearer", apiKey);
+
+            var response = await client.GetAsync(route, TestContext.Current.CancellationToken);
+
+            _output.WriteLine($"{route}: {(int)response.StatusCode}");
+            Assert.True(response.StatusCode is System.Net.HttpStatusCode.Unauthorized or System.Net.HttpStatusCode.Forbidden);
+        }
+
         // A FusionPBX API key sending from a number it owns should be accepted. Requires a real key plus a number
         // that is a destination in that key's domain, both supplied via configuration.
         [Fact]

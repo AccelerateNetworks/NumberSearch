@@ -69,29 +69,34 @@ namespace Messaging
         public static bool IsAuthenticated(this User user) => user.user_uuid != Guid.Empty;
 
         /// <summary>
-        /// Does the authenticated FusionPBX user own the supplied phone number? Ownership means the number is a
-        /// destination registered to the user's domain in FusionPBX. Matching tolerates country code prefixes,
-        /// so +12065551234 and 12065551234 both match a destination stored as 2065551234.
+        /// The FusionPBX destination for the supplied phone number, if it is registered to the authenticated user's
+        /// domain; otherwise a default DestinationDetails (destination_uuid == Guid.Empty). Matching tolerates country
+        /// code prefixes, so +12065551234 and 12065551234 both match a destination stored as 2065551234.
         /// </summary>
-        public static async Task<bool> OwnsNumberAsync(this User user, string dialedNumber, string fusionPBXConnectionString)
+        public static async Task<DestinationDetails> GetOwnedDestinationAsync(this User user, string dialedNumber, string fusionPBXConnectionString)
         {
             if (!user.IsAuthenticated() || string.IsNullOrWhiteSpace(dialedNumber))
             {
-                return false;
+                return default;
             }
 
             try
             {
-                var destination = await DestinationDetails.GetByDialedNumberAndDomainAsync(
+                return await DestinationDetails.GetByDialedNumberAndDomainAsync(
                     dialedNumber.AsMemory(), user.domain_uuid ?? Guid.Empty, fusionPBXConnectionString.AsMemory());
-
-                return destination.destination_uuid != Guid.Empty;
             }
             catch (Exception ex)
             {
                 Log.Error("[FusionPBX] Failed to verify number ownership against the FusionPBX database: {Message}", ex.Message);
-                return false;
+                return default;
             }
         }
+
+        /// <summary>
+        /// Does the authenticated FusionPBX user own the supplied phone number? Ownership means the number is a
+        /// destination registered to the user's domain in FusionPBX.
+        /// </summary>
+        public static async Task<bool> OwnsNumberAsync(this User user, string dialedNumber, string fusionPBXConnectionString)
+            => (await user.GetOwnedDestinationAsync(dialedNumber, fusionPBXConnectionString)).destination_uuid != Guid.Empty;
     }
 }
