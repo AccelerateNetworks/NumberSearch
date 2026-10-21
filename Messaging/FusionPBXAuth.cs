@@ -53,8 +53,20 @@ namespace Messaging
             {
                 var user = await User.GetByApiKeyAsync(token.AsMemory(), fusionPBXConnectionString.AsMemory());
 
-                // FusionPBX stores user_enabled as the text 'true' or 'false' rather than as a boolean.
-                return user.user_uuid != Guid.Empty && user.user_enabled is "true" ? user : default;
+                if (user.user_uuid == Guid.Empty)
+                {
+                    return default;
+                }
+
+                // Older FusionPBX schemas store user_enabled as the text 'true' or 'false'; newer ones use a boolean
+                // column, which Dapper maps into this string as "True" or "False". Accept both.
+                if (!string.Equals(user.user_enabled, "true", StringComparison.OrdinalIgnoreCase))
+                {
+                    Log.Warning("[FusionPBX] API key matched user {Username} but user_enabled is {UserEnabled}", user.username, user.user_enabled);
+                    return default;
+                }
+
+                return user;
             }
             catch (Exception ex)
             {
