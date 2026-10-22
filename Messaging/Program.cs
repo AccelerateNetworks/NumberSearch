@@ -54,6 +54,18 @@ Log.Logger = new LoggerConfiguration()
                 .MinimumLevel.Override("Microsoft", LogEventLevel.Information)
                 .MinimumLevel.Override("Microsoft.AspNetCore", LogEventLevel.Warning)
                 .Enrich.FromLogContext()
+                // These are logged with {@...} in many places. Keep the client secrets they carry out of the log files,
+                // which are shipped off this server.
+                .Destructure.ByTransforming<ForwardedMessage>(m => new
+                {
+                    m.Id, m.From, m.To, m.AdditionalRecipients, m.Content, m.MediaURLs, m.MessageType, m.MessageSource,
+                    m.DateReceivedUTC, ClientSecret = "[redacted]"
+                })
+                .Destructure.ByTransforming<ClientRegistration>(c => new
+                {
+                    c.ClientRegistrationId, c.AsDialed, c.CallbackUrl, c.DateRegistered, c.RegisteredUpstream,
+                    c.UpstreamStatusDescription, c.DateLastTestMessageReceived, c.Email, c.EmailVerified, ClientSecret = "[redacted]"
+                })
                 //.WriteTo.Console()
                 .WriteTo.File(
                     $"log.txt",
@@ -207,6 +219,14 @@ try
     using var dbContext = new MessagingContext(contextOptions);
     await dbContext.Database.MigrateAsync();
 
+    // Behind nginx every request reaches Kestrel as plain http from loopback. Apply X-Forwarded-Proto and
+    // X-Forwarded-For first so the scheme and client IP are right for everything after this, including the
+    // server URL in the OpenAPI document and HTTPS redirection.
+    app.UseForwardedHeaders();
+
+    // Request logging must come before authentication and authorization so that requests they reject (401/403)
+    // are still logged. Registered after them, it only ever saw requests that had already been authorized.
+    app.UseSerilogRequestLogging();
     app.UseCors();
     app.UseAuthentication();
     //app.UseHttpLogging();
@@ -220,7 +240,12 @@ try
 
     app.UseAuthorization();
     app.UseHttpsRedirection();
-    app.UseDeveloperExceptionPage();
+
+    // The developer exception page returns stack traces and request details to the caller. Never show it in production.
+    if (app.Environment.IsDevelopment())
+    {
+        app.UseDeveloperExceptionPage();
+    }
 
     //app.MapSwagger("/openapi/{documentName}.json");
     app.MapOpenApi();
@@ -229,7 +254,6 @@ try
     app.MapScalarApiReference("/", options => options.WithDefaultHttpClient(ScalarTarget.JavaScript, ScalarClient.Fetch)
         .AddPreferredSecuritySchemes("Bearer"));
 
-    app.UseSerilogRequestLogging();
     app.UseSecurityHeaders(policy => policy.AddDefaultSecurityHeaders());
     app.UseHttpMetrics();
     app.MapMetrics();
@@ -336,7 +360,7 @@ try
         .AddOpenApiOperationTransformer((operation, context, ct) =>
         {
             operation.Summary = "Send an SMS or MMS Message";
-            operation.Description = "Submit outbound messages to this endpoint. The 'to' field is a comma separated list of dialed numbers, or a single dialed number without commas. The 'msisdn' the dialed number of the client that is sending the message. The 'message' field is a string. No validation of the message field occurs before it is forwarded to our upstream vendors. If you include any file paths in the MediaURLs array the message will be sent as an MMS. If the Message field is loner than 160 characters, but less than 1600 characters, the message will be sent as an MMS, not an SMS, even if no MediaURLs are provided. When authenticated with a FusionPBX API key, the 'msisdn' must be a phone number registered to your FusionPBX domain.";
+            operation.Description = "Submit outbound messages to this endpoint. The 'to' field is a comma separated list of dialed numbers, or a single dialed number without commas. The 'msisdn' the dialed number of the client that is sending the message. The 'message' field is a string. No validation of the message field occurs before it is forwarded to our upstream vendors. If you include any file paths in the MediaURLs array the message will be sent as an MMS. If the Message field is loner than 160 characters, but less than 1600 characters, the message will be sent as an MMS, not an SMS, even if no MediaURLs are provided. When authenticated with a FusionPBX API key, the 'msisdn' must be a phone number registered to your FusionPBX domain. Add ?test=true for a dry run: every check runs and any media is downloaded, but nothing is sent to the vendor.";
             return Task.CompletedTask;
         });
 
@@ -416,7 +440,8 @@ try
             //string timezone = context.Request.Form["timezone"].ToString();
             //string origtime = context.Request.Form["origtime"].ToString();
             string fullrecipientlist = context.Request.Form["FullRecipientList"].ToString();
-            string incomingRequest = string.Join(',', context.Request.Form.Select(x => $"{x.Key}:{x.Value}"));
+            string incomingRequest = string.Join(',', context.Request.Form.Select(x =>
+                $"{x.Key}:{(x.Key.Equals("serversecret", StringComparison.OrdinalIgnoreCase) ? "[redacted]" : x.Value.ToString())}"));
 
             // The message field is a JSON object.
             var MMSDescription = System.Text.Json.JsonSerializer.Deserialize<FirstPointMMSMessage>(message);
@@ -613,7 +638,7 @@ try
                 toForward.ClientSecret = client.ClientSecret;
                 messageRecord.To = toForward.To;
                 messageRecord.From = toForward.From;
-                messageRecord.ToForward = System.Text.Json.JsonSerializer.Serialize(toForward);
+                messageRecord.ToForward = toForward.ToRedactedJson();
 
                 try
                 {
@@ -641,7 +666,7 @@ try
                 }
                 catch (Exception ex)
                 {
-                    return TypedResults.BadRequest($"Failed to save incoming message to the database. {ex.Message} {System.Text.Json.JsonSerializer.Serialize(messageRecord)}");
+                    return TypedResults.BadRequest($"Failed to save incoming message to the database. Reference: {Endpoints.LogErrorReference(ex)}");
                 }
 
                 // Forward to email if enabled
@@ -706,7 +731,7 @@ try
 
                 messageRecord.To = toForward.To;
                 messageRecord.From = toForward.From;
-                messageRecord.ToForward = System.Text.Json.JsonSerializer.Serialize(toForward);
+                messageRecord.ToForward = toForward.ToRedactedJson();
                 messageRecord.RawResponse = $"{toForward.To} is not registered as a client.";
                 db.Messages.Add(messageRecord);
                 await db.SaveChangesAsync();
@@ -716,11 +741,9 @@ try
         }
         catch (Exception ex)
         {
-            Log.Error(ex.Message);
-            Log.Error(ex.StackTrace ?? "No stack trace found.");
             Log.Information("Failed to read form data by field name.");
 
-            return TypedResults.BadRequest(ex.Message);
+            return TypedResults.BadRequest($"Something went wrong on our end. Reference: {Endpoints.LogErrorReference(ex)}");
         }
     }).AddOpenApiOperationTransformer((operation, context, ct) =>
     {
@@ -746,15 +769,8 @@ try
             return Task.CompletedTask;
         });
 
-    app.MapPost("/message/send/test", Endpoints.SendTestAsync)
-        .AddOpenApiOperationTransformer((operation, context, ct) =>
-        {
-            operation.Summary = "Endpoint that can be used to support functional testing of the message sending endpoints without actually sending it to the vendor.";
-            operation.Description = "For testing purposes only.";
-            return Task.CompletedTask;
-        });
-
     app.MapPost("/message/forward/test/email", Endpoints.ForwardEmailTestAsync)
+        .RequireAuthorization("api")
         .AddOpenApiOperationTransformer((operation, context, ct) =>
         {
             operation.Summary = "Endpoint that can be used as the callback URL for a registered client to support functional testing of the message forwarding endpoints.";
@@ -799,6 +815,18 @@ internal sealed class BearerSecuritySchemeTransformer(IAuthenticationSchemeProvi
 }
 public static class Endpoints
 {
+    /// <summary>
+    /// Logs an exception under a short reference ID and returns the ID. Return the ID to callers instead of the
+    /// exception's message, which can include hostnames, SQL, file paths and vendor details. Search the logs for
+    /// "Error {id}" to find the full exception.
+    /// </summary>
+    public static string LogErrorReference(Exception ex)
+    {
+        string reference = Guid.NewGuid().ToString("N")[..12];
+        Log.Error(ex, "[Error {ErrorReference}] {ExceptionMessage}", reference, ex.Message);
+        return reference;
+    }
+
     public static async Task<Results<Ok<AccessTokenResponse>, EmptyHttpResult, ProblemHttpResult>>
         LoginAsync([FromBody] LoginRequest login, [FromQuery] bool? useCookies, [FromQuery] bool? useSessionCookies, [FromServices] IServiceProvider sp)
     {
@@ -880,9 +908,7 @@ public static class Endpoints
         }
         catch (Exception ex)
         {
-            Log.Error(ex.Message);
-            Log.Error(ex.StackTrace ?? "No stacktrace found.");
-            return TypedResults.BadRequest(ex.Message);
+            return TypedResults.BadRequest($"Something went wrong on our end. Reference: {LogErrorReference(ex)}");
         }
 
     }
@@ -950,9 +976,7 @@ public static class Endpoints
             }
             catch (Exception ex)
             {
-                Log.Error(ex.Message);
-                Log.Error(ex.StackTrace ?? "No stack trace found.");
-                return TypedResults.BadRequest(ex.Message);
+                return TypedResults.BadRequest($"Something went wrong on our end. Reference: {LogErrorReference(ex)}");
             }
         }
         else
@@ -1001,9 +1025,7 @@ public static class Endpoints
             }
             catch (Exception ex)
             {
-                Log.Error(ex.Message);
-                Log.Error(ex.StackTrace ?? "No stack trace found.");
-                return TypedResults.BadRequest(ex.Message);
+                return TypedResults.BadRequest($"Something went wrong on our end. Reference: {LogErrorReference(ex)}");
             }
         }
     }
@@ -1090,7 +1112,7 @@ public static class Endpoints
                     CallbackUrl = registration.CallbackUrl,
                     Email = registration.Email,
                     Registered = false,
-                    Message = $"The email server at {emailDomain.Host} didn't have an MX record. Please supply a valid email address not {registration.Email}. {ex.Message}"
+                    Message = $"The email server at {emailDomain.Host} didn't have an MX record. Please supply a valid email address not {registration.Email}. Reference: {LogErrorReference(ex)}"
                 });
             }
         }
@@ -1139,14 +1161,12 @@ public static class Endpoints
         }
         catch (Exception ex)
         {
-            Log.Error(ex.Message);
-            Log.Error(ex.StackTrace ?? "No stack trace found.");
             return TypedResults.BadRequest(new RegistrationResponse
             {
                 DialedNumber = registration.DialedNumber,
                 CallbackUrl = registration.CallbackUrl,
                 Registered = false,
-                Message = $"Failed to enabled messaging service through EndStream for this dialed number. Please email dan@acceleratenetworks.com to report this outage. {ex.Message}"
+                Message = $"Failed to enabled messaging service through EndStream for this dialed number. Please email dan@acceleratenetworks.com to report this outage. Reference: {LogErrorReference(ex)}"
             });
         }
 
@@ -1257,14 +1277,12 @@ public static class Endpoints
         }
         catch (Exception ex)
         {
-            Log.Error(ex.Message);
-            Log.Error(ex.StackTrace ?? "No stack trace found.");
             return TypedResults.BadRequest(new RegistrationResponse
             {
                 DialedNumber = registration.DialedNumber,
                 CallbackUrl = registration.CallbackUrl,
                 Registered = false,
-                Message = $"Failed to save the registration to the database. Please email dan@acceleratenetworks.com to report this outage. {ex.Message}"
+                Message = $"Failed to save the registration to the database. Please email dan@acceleratenetworks.com to report this outage. Reference: {LogErrorReference(ex)}"
             });
         }
 
@@ -1297,9 +1315,7 @@ public static class Endpoints
         }
         catch (Exception ex)
         {
-            Log.Error(ex.Message);
-            Log.Error(ex.StackTrace ?? "No stack trace found.");
-            return TypedResults.BadRequest($"Failed to save the registration to the database. Please email dan@acceleratenetworks.com to report this outage. {ex.Message}");
+            return TypedResults.BadRequest($"Failed to save the registration to the database. Please email dan@acceleratenetworks.com to report this outage. Reference: {LogErrorReference(ex)}");
         }
 
         return TypedResults.Ok($"The registration for {asDialed} has been removed.");
@@ -1378,9 +1394,7 @@ public static class Endpoints
             }
             catch (Exception ex)
             {
-                Log.Error(ex.Message);
-                Log.Error(ex.StackTrace ?? "No stacktrace found.");
-                return TypedResults.BadRequest(ex.Message);
+                return TypedResults.BadRequest($"Something went wrong on our end. Reference: {LogErrorReference(ex)}");
             }
         }
     }
@@ -1459,9 +1473,7 @@ public static class Endpoints
             }
             catch (Exception ex)
             {
-                Log.Error(ex.Message);
-                Log.Error(ex.StackTrace ?? "No stacktrace found.");
-                return TypedResults.BadRequest(ex.Message);
+                return TypedResults.BadRequest($"Something went wrong on our end. Reference: {LogErrorReference(ex)}");
             }
         }
         else
@@ -1498,9 +1510,7 @@ public static class Endpoints
             }
             catch (Exception ex)
             {
-                Log.Error(ex.Message);
-                Log.Error(ex.StackTrace ?? "No stacktrace found.");
-                return TypedResults.BadRequest(ex.Message);
+                return TypedResults.BadRequest($"Something went wrong on our end. Reference: {LogErrorReference(ex)}");
             }
         }
     }
@@ -1523,9 +1533,7 @@ public static class Endpoints
         }
         catch (Exception ex)
         {
-            Log.Error(ex.Message);
-            Log.Error(ex.StackTrace ?? "No stack trace found.");
-            return TypedResults.BadRequest(ex.Message);
+            return TypedResults.BadRequest($"Something went wrong on our end. Reference: {LogErrorReference(ex)}");
         }
     }
 
@@ -1549,7 +1557,7 @@ public static class Endpoints
                         toForward.ClientSecret = client.ClientSecret;
                         messageRecord.To = toForward.To;
                         messageRecord.From = toForward.From;
-                        messageRecord.ToForward = System.Text.Json.JsonSerializer.Serialize(toForward);
+                        messageRecord.ToForward = toForward.ToRedactedJson();
 
                         try
                         {
@@ -1577,7 +1585,7 @@ public static class Endpoints
                         }
                         catch (Exception ex)
                         {
-                            return TypedResults.BadRequest($"Failed to save incoming message to the database. {ex.Message} {System.Text.Json.JsonSerializer.Serialize(messageRecord)}");
+                            return TypedResults.BadRequest($"Failed to save incoming message to the database. Reference: {LogErrorReference(ex)}");
                         }
 
                         Log.Information("{@messageRecord}", messageRecord);
@@ -1590,7 +1598,7 @@ public static class Endpoints
                         messageRecord.To = toForward.To;
                         messageRecord.From = toForward.From;
                         messageRecord.Content = toForward.Content;
-                        messageRecord.ToForward = System.Text.Json.JsonSerializer.Serialize(toForward);
+                        messageRecord.ToForward = toForward.ToRedactedJson();
                         messageRecord.RawResponse = $"{toForward.To} is not registered as a client.";
                         db.Messages.Add(messageRecord);
                         await db.SaveChangesAsync();
@@ -1610,9 +1618,7 @@ public static class Endpoints
         }
         catch (Exception ex)
         {
-            Log.Error(ex.Message);
-            Log.Error(ex.StackTrace ?? "No stack trace found.");
-            return TypedResults.BadRequest(ex.Message);
+            return TypedResults.BadRequest($"Something went wrong on our end. Reference: {LogErrorReference(ex)}");
         }
     }
 
@@ -1757,6 +1763,11 @@ public static class Endpoints
             }
         }
 
+        // A dry run (?test=true) does everything a real send does except hand the message to the vendor. Media is still
+        // downloaded, so a dry run also checks that the media URLs can be fetched.
+        bool dryRun = test is true;
+        var dryRunResponse = new Response { Text = "OK", Code = 200, DeveloperText = "Dry run: the message was validated but not sent to the vendor." };
+
         try
         {
             FirstPointResponse sendMessage = new();
@@ -1785,7 +1796,9 @@ public static class Endpoints
                 }
 
                 // pass them on to the vendor
-                var MMSResponse = await appSettings.ConnectionStrings.FirstPointOutboundMMSMessageURL.PostAsync(multipartContent).ReceiveString();
+                var MMSResponse = dryRun
+                    ? JsonSerializer.Serialize(new FirstPointResponseMMS { Response = dryRunResponse })
+                    : await appSettings.ConnectionStrings.FirstPointOutboundMMSMessageURL.PostAsync(multipartContent).ReceiveString();
 
                 // Parse the oddly formatted response.
                 var toJSON = JsonSerializer.Deserialize<FirstPointResponseMMS>(MMSResponse);
@@ -1813,7 +1826,7 @@ public static class Endpoints
                     // Let the caller know that delivery status for specific numbers.
                     return TypedResults.Ok(new SendMessageResponse
                     {
-                        Message = $"MMS Message sent to {toForward.to}",
+                        Message = dryRun ? $"Dry run: MMS message to {toForward.to} was validated but not sent." : $"MMS Message sent to {toForward.to}",
                         MessageSent = true,
                     });
                 }
@@ -1857,7 +1870,9 @@ public static class Endpoints
                     record.Content = toForward.messagebody;
 
                     // pass them on to the vendor
-                    var MMSResponse = await appSettings.ConnectionStrings.FirstPointOutboundMMSMessageURL.PostAsync(multipartContent).ReceiveString();
+                    var MMSResponse = dryRun
+                        ? JsonSerializer.Serialize(new FirstPointResponseMMS { Response = dryRunResponse })
+                        : await appSettings.ConnectionStrings.FirstPointOutboundMMSMessageURL.PostAsync(multipartContent).ReceiveString();
 
                     // Parse the oddly formatted response.
                     var toJSON = JsonSerializer.Deserialize<FirstPointResponseMMS>(MMSResponse);
@@ -1885,7 +1900,7 @@ public static class Endpoints
                         // Let the caller know that delivery status for specific numbers.
                         return TypedResults.Ok(new SendMessageResponse
                         {
-                            Message = $"MMS Message sent to {toForward.to}",
+                            Message = dryRun ? $"Dry run: MMS message to {toForward.to} was validated but not sent." : $"MMS Message sent to {toForward.to}",
                             MessageSent = true,
                         });
                     }
@@ -1918,11 +1933,11 @@ public static class Endpoints
                 }
                 else
                 {
-                    sendMessage = test ?? false ? await "https://sms.callpipe.com/message/send/test"
-                    .PostUrlEncodedAsync(toForward)
-                    .ReceiveJson<FirstPointResponse>() : await appSettings.ConnectionStrings.FirstPointOutboundMessageURL
-                    .PostUrlEncodedAsync(toForward)
-                    .ReceiveJson<FirstPointResponse>();
+                    sendMessage = dryRun
+                        ? new FirstPointResponse { Response = dryRunResponse }
+                        : await appSettings.ConnectionStrings.FirstPointOutboundMessageURL
+                            .PostUrlEncodedAsync(toForward)
+                            .ReceiveJson<FirstPointResponse>();
                 }
 
                 if (sendMessage is not null && sendMessage?.Response?.Text is "OK")
@@ -1948,7 +1963,7 @@ public static class Endpoints
                     // Let the caller know that delivery status for specific numbers.
                     return TypedResults.Ok(new SendMessageResponse
                     {
-                        Message = $"SMS Message sent to {toForward.to}",
+                        Message = dryRun ? $"Dry run: SMS message to {toForward.to} was validated but not sent." : $"SMS Message sent to {toForward.to}",
                         MessageSent = true,
                     });
                 }
@@ -2002,7 +2017,7 @@ public static class Endpoints
         }
         catch (Exception ex)
         {
-            Log.Error(ex.Message);
+            string reference = LogErrorReference(ex);
 
             try
             {
@@ -2017,7 +2032,7 @@ public static class Endpoints
                     MessageSource = MessageSource.Outgoing,
                     MessageType = message?.MediaURLs.Length > 0 ? MessageType.MMS : MessageType.SMS,
                     RawRequest = toForward.ToRedactedJson(),
-                    RawResponse = ex.Message
+                    RawResponse = $"[Error {reference}] {ex.Message}"
                 };
 
                 db.Messages.Add(record);
@@ -2029,7 +2044,7 @@ public static class Endpoints
                 Log.Fatal(ex.Message);
             }
 
-            return TypedResults.BadRequest(new SendMessageResponse { Message = $"Failed to submit message to FirstPoint. {ex.Message}" });
+            return TypedResults.BadRequest(new SendMessageResponse { Message = $"Failed to submit message to FirstPoint. Reference: {reference}" });
         }
 
     }
@@ -2047,7 +2062,7 @@ public static class Endpoints
     {
         if (token != appSettings.ConnectionStrings.PComNetIncomingToken)
         {
-            Log.Warning("Token is not valid. Token: {Token} is not {PComNetIncomingToken}", token, appSettings.ConnectionStrings.PComNetIncomingToken);
+            Log.Warning("Rejected an inbound SMS request with an invalid token.");
             return TypedResults.Unauthorized();
         }
 
@@ -2061,7 +2076,8 @@ public static class Endpoints
             //string timezone = context.Request.Form["timezone"].ToString();
             //string origtime = context.Request.Form["origtime"].ToString();
             string fullrecipientlist = context.Request.Form["FullRecipientList"].ToString();
-            string incomingRequest = string.Join(',', context.Request.Form.Select(x => $"{x.Key}:{x.Value}"));
+            string incomingRequest = string.Join(',', context.Request.Form.Select(x =>
+                $"{x.Key}:{(x.Key.Equals("serversecret", StringComparison.OrdinalIgnoreCase) ? "[redacted]" : x.Value.ToString())}"));
 
             // Disabled because this secret value changes whenever.
             //if (serversecret != firstPointIncomingSMSSecret)
@@ -2181,7 +2197,7 @@ public static class Endpoints
                 toForward.ClientSecret = client.ClientSecret;
                 messageRecord.To = toForward.To;
                 messageRecord.From = toForward.From;
-                messageRecord.ToForward = System.Text.Json.JsonSerializer.Serialize(toForward);
+                messageRecord.ToForward = toForward.ToRedactedJson();
 
                 try
                 {
@@ -2221,7 +2237,7 @@ public static class Endpoints
                 }
                 catch (Exception ex)
                 {
-                    return TypedResults.BadRequest($"Failed to save incoming message to the database. {ex.Message} {System.Text.Json.JsonSerializer.Serialize(messageRecord)}");
+                    return TypedResults.BadRequest($"Failed to save incoming message to the database. Reference: {LogErrorReference(ex)}");
                 }
 
                 // Forward to email if enabled
@@ -2260,7 +2276,7 @@ public static class Endpoints
                 messageRecord.To = toForward.To;
                 messageRecord.From = toForward.From;
                 messageRecord.Content = toForward.Content;
-                messageRecord.ToForward = System.Text.Json.JsonSerializer.Serialize(toForward);
+                messageRecord.ToForward = toForward.ToRedactedJson();
                 messageRecord.RawResponse = $"{toForward.To} is not registered as a client.";
                 db.Messages.Add(messageRecord);
                 await db.SaveChangesAsync();
@@ -2270,10 +2286,7 @@ public static class Endpoints
         }
         catch (Exception ex)
         {
-            Log.Error(ex.Message);
-            Log.Error(ex.StackTrace ?? "No stack trace found.");
-            Log.Information("Failed to read form data by field name.");
-            return TypedResults.BadRequest("Failed to read form data by field name.");
+            return TypedResults.BadRequest($"Failed to read form data by field name. Reference: {LogErrorReference(ex)}");
         }
     }
 
@@ -2315,24 +2328,8 @@ public static class Endpoints
         }
         catch (Exception ex)
         {
-            Log.Error(ex.Message);
-            Log.Error(ex.StackTrace ?? "No stack trace found.");
-            return TypedResults.BadRequest(ex.Message);
+            return TypedResults.BadRequest($"Something went wrong on our end. Reference: {LogErrorReference(ex)}");
         }
-    }
-
-    public static async Task<Results<Ok<FirstPointResponse>, BadRequest<FirstPointResponse>>>
-        SendTestAsync(HttpContext context, AppSettings appSettings)
-    {
-        string username = context.Request.Form["username"].ToString();
-        string password = context.Request.Form["password"].ToString();
-        string to = context.Request.Form["to"].ToString();
-        string msisdn = context.Request.Form["msisdn"].ToString();
-        //string messagebody = context.Request.Form["messagebody"].ToString();
-
-        return !string.IsNullOrWhiteSpace(username) && username == appSettings.ConnectionStrings.PComNetUsername && !string.IsNullOrWhiteSpace(password) && password == appSettings.ConnectionStrings.PComNetPassword && msisdn.Length == 11 && to.Length > 10
-                ? TypedResults.Ok(new FirstPointResponse { Response = new Response { Text = "OK", Code = 200, DeveloperText = "The outbound message was received and the vendor credentials matched." } })
-                : TypedResults.BadRequest(new FirstPointResponse { Response = new Response { Text = "BadRequest", Code = 500, DeveloperText = "The outbound message did not include the required credentials to authenticate with the vendor or the numbers were incorrectly formatted." } });
     }
 
     public static async Task<Results<Ok<string>, BadRequest<string>>>
@@ -2370,8 +2367,8 @@ public static class Endpoints
             }
             catch (Exception ex)
             {
-                Log.Error("[Checkout] Email address {ToEmailAddress} has an invalid domain: {Host}. {Message}", ToEmailAddress, emailDomain.Host, ex.Message);
-                var message = $"💀 The email server at {emailDomain.Host} didn't have an MX record. Please supply a valid email address. {ex.Message}";
+                Log.Error("[Checkout] Email address {ToEmailAddress} has an invalid domain: {Host}.", ToEmailAddress, emailDomain.Host);
+                var message = $"💀 The email server at {emailDomain.Host} didn't have an MX record. Please supply a valid email address. Reference: {LogErrorReference(ex)}";
                 return TypedResults.BadRequest(message);
             }
         }
@@ -2664,6 +2661,17 @@ namespace Models
         public DateTime DateReceivedUTC { get; set; } = DateTime.UtcNow;
         [DataType(DataType.Password)]
         public string ClientSecret { get; set; } = string.Empty;
+
+        /// <summary>
+        /// JSON for storing this message, without the client's secret. Anything that forwards a stored message again
+        /// sets ClientSecret from the client's current registration first.
+        /// </summary>
+        public string ToRedactedJson()
+        {
+            var json = System.Text.Json.JsonSerializer.SerializeToNode(this)!;
+            json[nameof(ClientSecret)] = "[redacted]";
+            return json.ToJsonString();
+        }
 
         public MessageRecord ToMessageRecord(string rawRequest, string rawResponse)
         {

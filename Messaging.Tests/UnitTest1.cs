@@ -342,23 +342,6 @@ namespace Messaging.Tests
         }
 
         [Fact]
-        public async Task MessageSendingTestAsync()
-        {
-            var stringContent = new FormUrlEncodedContent(
-            [
-                    new KeyValuePair<string, string>("msisdn", "15555551212"),
-                    new KeyValuePair<string, string>("to", "14445556543"),
-                    new KeyValuePair<string, string>("username", _configuration.GetConnectionString("PComNetUsername") ?? string.Empty),
-                    new KeyValuePair<string, string>("password", _configuration.GetConnectionString("PComNetPassword") ?? string.Empty),
-                    new KeyValuePair<string, string>("messagebody", "Your Lyft code is 12345"),
-
-                ]);
-            var response = await _httpClient.PostAsync("/message/send/test", stringContent, TestContext.Current.CancellationToken);
-            _output.WriteLine(await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken));
-            Assert.True(response.IsSuccessStatusCode);
-        }
-
-        [Fact]
         public async Task MessageForwardingTestAsync()
         {
             var toForward = new ForwardedMessage
